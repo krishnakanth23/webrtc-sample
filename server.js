@@ -1,0 +1,31 @@
+const express = require('express');
+const https = require('https');
+const fs = require('fs');
+
+const app = express();
+const port = 3000;
+
+https.createServer({
+    key: fs.readFileSync('./key.pem'),
+    cert: fs.readFileSync('./cert.pem'),
+    passphrase: '123456'
+}, app).listen(port, () => {
+    console.log('Listening...')
+});
+
+app.get('/', (req, res) => {
+    res.send('Hello HTTPS!')
+});
+
+// Set public folder as root
+app.use(express.static('public'));
+
+// Provide access to node_modules folder from the client-side
+app.use('/scripts', express.static(`${__dirname}/node_modules/`));
+
+// Redirect all traffic to index.html
+app.use((req, res) => res.sendFile(`${__dirname}/public/index.html`));
+
+// app.listen(port, () => {
+//     console.info('listening on %d', port);
+// });
